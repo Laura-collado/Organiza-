@@ -1,0 +1,594 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organizaê | Controle Financeiro</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6f8;
+            color: #172b4d;
+        }
+
+        header {
+            background: #172b4d;
+            color: white;
+            padding: 22px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 25px;
+        }
+
+        header span {
+            color: #20a477;
+        }
+
+        header p {
+            font-size: 13px;
+            color: #cbd5e1;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+        .welcome {
+            margin-bottom: 25px;
+        }
+
+        .welcome h2 {
+            font-size: 25px;
+            margin-bottom: 8px;
+        }
+
+        .welcome p {
+            color: #718096;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px #00000008;
+        }
+
+        .card p {
+            color: #718096;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .card h3 {
+            font-size: 26px;
+        }
+
+        .balance {
+            border-left: 5px solid #20a477;
+        }
+
+        .income {
+            border-left: 5px solid #3182ce;
+        }
+
+        .expense {
+            border-left: 5px solid #e05a5a;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 3px 12px #00000008;
+        }
+
+        .panel h3 {
+            margin-bottom: 22px;
+        }
+
+        label {
+            display: block;
+            margin: 14px 0 7px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dce2e8;
+            border-radius: 7px;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: #20a477;
+        }
+
+        button {
+            border: none;
+            padding: 13px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .add-button {
+            width: 100%;
+            background: #20a477;
+            color: white;
+            margin-top: 22px;
+        }
+
+        button:hover {
+            opacity: 0.85;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .history-header select {
+            width: auto;
+        }
+
+        .transaction {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #edf0f2;
+            gap: 10px;
+        }
+
+        .transaction-info p {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .transaction-info small {
+            color: #718096;
+        }
+
+        .transaction-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .positive {
+            color: #20a477;
+            font-weight: bold;
+        }
+
+        .negative {
+            color: #e05a5a;
+            font-weight: bold;
+        }
+
+        .delete {
+            background: #fff0f0;
+            color: #e05a5a;
+            padding: 7px 10px;
+        }
+
+        .chart-panel {
+            margin-top: 22px;
+        }
+
+        .empty {
+            color: #718096;
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: #718096;
+            font-size: 13px;
+        }
+
+        @media (max-width: 750px) {
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            .content {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                padding: 20px;
+            }
+
+            .history-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .history-header select {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Organiza<span>ê.</span></h1>
+    <p>Seu dinheiro, sob controle.</p>
+</header>
+
+<main>
+
+    <section class="welcome">
+        <h2>Visão geral</h2>
+        <p>Acompanhe suas finanças e organize sua vida financeira.</p>
+    </section>
+
+    <section class="cards">
+
+        <div class="card balance">
+            <p>Saldo disponível</p>
+            <h3 id="balance">R$ 0,00</h3>
+        </div>
+
+        <div class="card income">
+            <p>Total de receitas</p>
+            <h3 id="income">R$ 0,00</h3>
+        </div>
+
+        <div class="card expense">
+            <p>Total de despesas</p>
+            <h3 id="expense">R$ 0,00</h3>
+        </div>
+
+    </section>
+
+    <section class="content">
+
+        <div class="panel">
+            <h3>Nova movimentação</h3>
+
+            <form id="transactionForm">
+
+                <label for="description">Descrição</label>
+                <input
+                    type="text"
+                    id="description"
+                    placeholder="Ex: Salário, mercado..."
+                    required
+                >
+
+                <label for="amount">Valor (R$)</label>
+                <input
+                    type="number"
+                    id="amount"
+                    placeholder="0,00"
+                    min="0.01"
+                    step="0.01"
+                    required
+                >
+
+                <label for="type">Tipo de movimentação</label>
+                <select id="type" required>
+                    <option value="income">Receita</option>
+                    <option value="expense">Despesa</option>
+                </select>
+
+                <label for="category">Categoria</label>
+                <select id="category" required>
+                    <option value="Salário">Salário</option>
+                    <option value="Alimentação">Alimentação</option>
+                    <option value="Moradia">Moradia</option>
+                    <option value="Transporte">Transporte</option>
+                    <option value="Educação">Educação</option>
+                    <option value="Saúde">Saúde</option>
+                    <option value="Lazer">Lazer</option>
+                    <option value="Outros">Outros</option>
+                </select>
+
+                <label for="date">Data</label>
+                <input type="date" id="date" required>
+
+                <button type="submit" class="add-button">
+                    + Adicionar movimentação
+                </button>
+
+            </form>
+        </div>
+
+        <div class="panel">
+
+            <div class="history-header">
+                <h3>Histórico financeiro</h3>
+
+                <select id="filter">
+                    <option value="all">Todas</option>
+                    <option value="income">Receitas</option>
+                    <option value="expense">Despesas</option>
+                </select>
+            </div>
+
+            <div id="transactionList">
+                <p class="empty">Nenhuma movimentação cadastrada.</p>
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="panel chart-panel">
+        <h3>Resumo financeiro</h3>
+        <canvas id="financeChart"></canvas>
+    </section>
+
+</main>
+
+<footer>
+    Organizaê © 2026 | Desenvolvido para organização financeira pessoal.
+</footer>
+
+<script>
+
+    let transactions = JSON.parse(
+        localStorage.getItem("transactions")
+    ) || [];
+
+    const form = document.getElementById("transactionForm");
+    const filter = document.getElementById("filter");
+
+    const money = value =>
+        value.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL"
+        });
+
+    function saveData() {
+        localStorage.setItem(
+            "transactions",
+            JSON.stringify(transactions)
+        );
+    }
+
+    function updateDashboard() {
+
+        const income = transactions
+            .filter(item => item.type === "income")
+            .reduce((total, item) => total + item.amount, 0);
+
+        const expense = transactions
+            .filter(item => item.type === "expense")
+            .reduce((total, item) => total + item.amount, 0);
+
+        const balance = income - expense;
+
+        document.getElementById("balance").textContent =
+            money(balance);
+
+        document.getElementById("income").textContent =
+            money(income);
+
+        document.getElementById("expense").textContent =
+            money(expense);
+
+        renderChart(income, expense);
+    }
+
+    function renderTransactions() {
+
+        const list = document.getElementById("transactionList");
+
+        const selectedFilter = filter.value;
+
+        const filtered = transactions
+            .filter(item =>
+                selectedFilter === "all" ||
+                item.type === selectedFilter
+            )
+            .sort((a, b) =>
+                b.date.localeCompare(a.date)
+            );
+
+        list.innerHTML = "";
+
+        if (filtered.length === 0) {
+            list.innerHTML =
+                '<p class="empty">Nenhuma movimentação encontrada.</p>';
+            return;
+        }
+
+        filtered.forEach(item => {
+
+            const div = document.createElement("div");
+            div.className = "transaction";
+
+            const info = document.createElement("div");
+            info.className = "transaction-info";
+
+            const description = document.createElement("p");
+            description.textContent = item.description;
+
+            const details = document.createElement("small");
+            details.textContent =
+                `${item.category} • ${item.date.split("-").reverse().join("/")}`;
+
+            info.append(description, details);
+
+            const actions = document.createElement("div");
+            actions.className = "transaction-actions";
+
+            const value = document.createElement("span");
+            value.className =
+                item.type === "income" ? "positive" : "negative";
+
+            value.textContent =
+                `${item.type === "income" ? "+" : "-"} ${money(item.amount)}`;
+
+            const button = document.createElement("button");
+            button.className = "delete";
+            button.textContent = "Excluir";
+
+            button.addEventListener("click", () => {
+                deleteTransaction(item.id);
+            });
+
+            actions.append(value, button);
+            div.append(info, actions);
+
+            list.appendChild(div);
+
+        });
+    }
+
+    function deleteTransaction(id) {
+
+        if (!confirm("Deseja excluir esta movimentação?")) {
+            return;
+        }
+
+        transactions = transactions.filter(
+            item => item.id !== id
+        );
+
+        saveData();
+        renderTransactions();
+        updateDashboard();
+    }
+
+    function renderChart(income, expense) {
+
+        if (window.financeChart) {
+            window.financeChart.destroy();
+        }
+
+        window.financeChart = new Chart(
+            document.getElementById("financeChart"),
+            {
+                type: "doughnut",
+
+                data: {
+                    labels: ["Receitas", "Despesas"],
+
+                    datasets: [{
+                        data: [income, expense],
+
+                        backgroundColor: [
+                            "#20a477",
+                            "#e05a5a"
+                        ],
+
+                        borderWidth: 0
+                    }]
+                },
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+
+                    plugins: {
+                        legend: {
+                            position: "bottom"
+                        }
+                    }
+                }
+            }
+        );
+    }
+
+    form.addEventListener("submit", function(event) {
+
+        event.preventDefault();
+
+        const description =
+            document.getElementById("description").value.trim();
+
+        const amount = Number(
+            document.getElementById("amount").value
+        );
+
+        const type =
+            document.getElementById("type").value;
+
+        const category =
+            document.getElementById("category").value;
+
+        const date =
+            document.getElementById("date").value;
+
+        if (!description || !date || !Number.isFinite(amount) || amount <= 0) {
+            alert("Preencha todos os campos corretamente.");
+            return;
+        }
+
+        const transaction = {
+            id: crypto.randomUUID(),
+            description,
+            amount,
+            type,
+            category,
+            date
+        };
+
+        transactions.push(transaction);
+
+        saveData();
+
+        form.reset();
+
+        document.getElementById("date").value =
+            new Date().toLocaleDateString("en-CA");
+
+        renderTransactions();
+        updateDashboard();
+
+    });
+
+    filter.addEventListener("change", renderTransactions);
+
+    document.getElementById("date").value =
+        new Date().toLocaleDateString("en-CA");
+
+    renderTransactions();
+    updateDashboard();
+
+</script>
+
+</body>
+</html>
